@@ -1,0 +1,19 @@
+{
+  "rules": {
+    "trivia": {
+      "game": {
+        ".read": true,
+        ".write": true
+      },
+      "scores": {
+        ".read": true,
+        ".write": true
+      },
+      "responses": {
+        ".read": true,
+        ".write": true
+      }
+    }
+  }
+}
+

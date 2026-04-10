@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0f">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Trivia Night — Team</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c28;--accent:#f0c040;--accent2:#e05a5a;--accent3:#5ab4e0;--text:#f0eee8;--muted:#7a7890;--border:#2a2a3a;--correct:#4caf82}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+html,body{height:100%;scroll-behavior:smooth}
+body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;line-height:1.5;padding-bottom:24px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.app-header{padding:14px 18px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:100}
+.hteam{font-family:"Space Mono",monospace;font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
+.hteam span{color:var(--accent);font-weight:700}
+.hstatus{display:flex;align-items:center;gap:8px}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.live-dot.on{background:#4caf82;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.live-txt{font-family:"Space Mono",monospace;font-size:10px;color:var(--muted);letter-spacing:1px}
+.app-state{display:none;flex-direction:column;padding:20px 18px;animation:fadeIn .3s ease}
+.app-state.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+#stWaiting{text-align:center;padding-top:80px}
+#stWaiting .wi{font-size:52px;margin-bottom:18px;animation:float 2s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+#stWaiting .wt{font-family:"Bebas Neue",sans-serif;font-size:34px;color:var(--text);margin-bottom:6px}
+#stWaiting .ws{font-family:"Space Mono",monospace;font-size:11px;color:var(--muted);letter-spacing:2px}
+#stRound{justify-content:flex-start;padding-top:16px}
+.timer-wrap{display:flex;justify-content:center;margin-bottom:16px}
+.timer-txt{font-family:"Bebas Neue",sans-serif;font-size:48px;color:var(--accent);line-height:1}
+.timer-txt.urgent{color:var(--accent2);animation:pulse .5s infinite alternate}
+.audio-status{background:rgba(240,192,64,.1);border:1px solid var(--accent);color:var(--accent);padding:8px;border-radius:8px;text-align:center;font-family:"Space Mono",monospace;font-size:10px;margin-bottom:12px;display:none}
+.audio-status.show{display:block}
+.q-list{display:flex;flex-direction:column;gap:16px;margin-bottom:20px}
+.q-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px}
+.q-header{font-family:"Space Mono",monospace;font-size:10px;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+.q-text{font-size:17px;font-weight:500;line-height:1.4;margin-bottom:12px}
+.ans-input{width:100%;background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:12px 14px;color:var(--text);font-size:16px;font-family:"DM Sans",sans-serif;transition:border-color .2s;resize:none;min-height:60px}
+.ans-input:focus{outline:none;border-color:var(--accent)}
+.ans-input:disabled{background:var(--surface2);color:var(--muted);opacity:.6}
+.conf-label{font-family:"Space Mono",monospace;font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin:12px 0 6px;display:block}
+.conf-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.conf-btn{background:var(--surface);border:2px solid var(--border);border-radius:10px;padding:10px 4px;text-align:center;cursor:pointer;transition:all .15s;font-family:"Bebas Neue",sans-serif;font-size:22px;color:var(--muted)}
+.conf-btn:active{transform:scale(.95)}
+.conf-btn.sel{border-color:var(--accent);background:rgba(240,192,64,.15);color:var(--accent)}
+.conf-btn.used{opacity:.3;pointer-events:none;border-style:dashed}
+.mc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mc-btn{background:var(--surface);border:2px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;cursor:pointer;font-family:'Bebas Neue';font-size:20px;color:var(--muted);transition:all .15s}
+.mc-btn.sel{border-color:var(--accent);background:rgba(240,192,64,.12);color:var(--accent)}
+#stBonus{justify-content:flex-start;padding-top:16px}
+.bonus-conf-wrap{display:flex;align-items:center;gap:12px;justify-content:center;margin:20px 0}
+.bonus-input{width:80px;text-align:center;font-family:"Bebas Neue",sans-serif;font-size:40px;background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:8px;color:var(--accent)}
+.bonus-input:focus{outline:none;border-color:var(--accent)}
+.bonus-hint{font-family:"Space Mono",monospace;font-size:10px;color:var(--muted);text-align:center;margin-top:8px}
+.submit-btn{display:block;width:calc(100% - 32px);margin:16px 16px 8px;background:var(--accent);border:none;border-radius:14px;padding:16px;font-family:"Bebas Neue",sans-serif;font-size:22px;letter-spacing:2px;color:#0a0a0f;cursor:pointer;transition:all .2s;font-weight:600}
+.submit-btn:hover{background:#ffd060}
+.submit-btn:active{transform:scale(.97)}
+.submit-btn:disabled{background:var(--surface2);color:var(--muted);cursor:not-allowed;transform:none}
+.ans-title,.scores-title{font-family:"Bebas Neue",sans-serif;font-size:30px;color:var(--accent);text-align:center;margin-bottom:16px}
+.ans-reveal{background:var(--surface);border:1px solid rgba(76,175,130,.4);border-radius:12px;padding:14px;margin-bottom:10px}
+.ar-label{font-family:"Space Mono",monospace;font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px}
+.ar-text{font-size:16px;font-weight:600;color:var(--correct)}
+.sc-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.sc-item.first{border-color:var(--accent);background:rgba(240,192,64,.06)}
+.sc-item.mine{border-color:var(--accent3);background:rgba(90,180,224,.06)}
+.sc-rank{font-family:"Bebas Neue",sans-serif;font-size:28px;color:var(--muted);min-width:28px}
+.sc-name{flex:1;font-size:14px;font-weight:600}
+.sc-pts{font-family:"Bebas Neue",sans-serif;font-size:30px;color:var(--accent)}
+.rank-banner{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:var(--accent3);color:#0a0a0f;padding:8px 16px;border-radius:8px;font-family:"Space Mono",monospace;font-size:12px;font-weight:700;z-index:300;animation:slideDown .3s ease;display:none}
+.rank-banner.show{display:block}
+@keyframes slideDown{from{transform:translateX(-50%) translateY(-100%)}to{transform:translateX(-50%) translateY(0)}}
+#regScreen{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center;padding:24px}
+.reg-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px;width:100%;max-width:400px;text-align:center}
+.reg-title{font-family:"Bebas Neue",sans-serif;font-size:48px;color:var(--accent);margin-bottom:6px;line-height:1}
+.reg-sub{font-family:"Space Mono",monospace;font-size:11px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-bottom:28px}
+.reg-input{width:100%;background:var(--surface2);border:2px solid var(--border);border-radius:12px;padding:14px 16px;color:var(--text);font-size:18px;text-align:center;font-family:"DM Sans",sans-serif;margin-bottom:12px}
+.reg-input:focus{outline:none;border-color:var(--accent)}
+.reg-btn{width:100%;background:var(--accent);border:none;border-radius:12px;padding:16px;font-family:"Bebas Neue",sans-serif;font-size:24px;letter-spacing:2px;color:#0a0a0f;cursor:pointer;font-weight:600}
+.reg-btn:disabled{background:var(--surface2);color:var(--muted);cursor:not-allowed}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:11px 20px;font-family:"Space Mono",monospace;font-size:11px;color:var(--accent);z-index:9000;opacity:0;transition:all .3s;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.error{border-color:var(--accent2);color:var(--accent2)}
+</style>
+</head>
+<body>
+<div id="regScreen">
+  <div class="reg-card">
+    <h1 class="reg-title">TRIVIA<br>NIGHT</h1>
+    <p class="reg-sub">WIB × AI × BAP</p>
+    <input class="reg-input" id="teamInput" placeholder="Enter your team name" maxlength="30" autocomplete="off"/>
+    <button class="reg-btn" id="joinBtn" disabled>JOIN GAME (Loading...)</button>
+  </div>
+</div>
+
+<div id="mainApp" style="display:none;min-height:100vh;flex-direction:column">
+  <header class="app-header">
+    <div class="hteam">Team: <span id="hTeam">—</span></div>
+    <div class="hstatus">
+      <div class="live-dot" id="liveDot"></div>
+      <span class="live-txt" id="liveTxt">CONNECTING</span>
+    </div>
+  </header>
+
+  <section class="app-state active" id="stWaiting">
+    <div class="wi">⏳</div>
+    <h2 class="wt">Waiting for<br>Next Round</h2>
+    <p class="ws">Stand by…</p>
+  </section>
+
+  <section class="app-state" id="stRound">
+    <div class="timer-wrap"><div class="timer-txt" id="timerTxt">7:00</div></div>
+    <div class="audio-status" id="audioStatus">🔊 HOST IS PLAYING AUDIO CLIP</div>
+    <div class="q-list" id="qList"></div>
+    <button class="submit-btn" id="submitBtn">SUBMIT ALL ANSWERS</button>
+  </section>
+
+  <section class="app-state" id="stBonus">
+    <div class="timer-wrap"><div class="timer-txt" id="bonusTimerTxt">1:00</div></div>
+    <div class="q-card" style="margin-bottom:16px">
+      <div class="q-header" id="bonusQHeader">BONUS Q1</div>
+      <div class="q-text" id="bonusQText">Question text loads here...</div>
+      <textarea class="ans-input" id="bonusAnsInput" placeholder="Type your answer..." style="margin-top:8px;min-height:60px;"></textarea>
+    </div>
+    <div class="conf-label">YOUR CONFIDENCE (1–20)</div>
+    <div class="bonus-conf-wrap">
+      <input type="number" class="bonus-input" id="bonusConfInput" min="1" max="20" step="1" placeholder="10" inputmode="numeric">
+    </div>
+    <p class="bonus-hint">Correct = +Points · Wrong = –Points · Must be 1–20</p>
+    <button class="submit-btn" id="bonusSubmitBtn">SUBMIT ANSWER</button>
+  </section>
+
+  <section class="app-state" id="stAnswers">
+    <h2 class="ans-title">ROUND ANSWERS</h2>
+    <div id="answersContent"></div>
+  </section>
+
+  <section class="app-state" id="stScores">
+    <h2 class="scores-title">🏆 LIVE SCORES</h2>
+    <div id="scoresContent"></div>
+  </section>
+</div>
+
+<div class="rank-banner" id="rankBanner"></div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, set, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const CONFIG = {
+  apiKey: "AIzaSyBh-j_SfJwfvGyc_XaGR6ZETUel0ZJwtpc",
+  authDomain: "som-trivia-night.firebaseapp.com",
+  databaseURL: "https://som-trivia-night-default-rtdb.firebaseio.com",
+  projectId: "som-trivia-night",
+  storageBucket: "som-trivia-night.firebasestorage.app",
+  messagingSenderId: "443495114109",
+  appId: "1:443495114109:web:6e813b82fbf284e7b89814"
+};
+
+const State = {
+  db: null, auth: null, teamName: localStorage.getItem("tTeamName") || "", teamId: localStorage.getItem("tTeamId") || "", uid: null,
+  listeners: [], timer: null, timeLeft: 0, submitted: false,
+  roundAnswers: {}, roundConf: {}, usedConf: new Set(), bonusSubmitted: false,
+  ready: false, isEditing: false,
+  lastRound: null, lastState: null, lastScoresData: null
+};
+
+const Utils = {
+  sanitize: s => { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML.trim(); },
+  showToast: (m, t = 'info') => { const el = document.getElementById('toast'); el.textContent = m; el.className = `toast ${t} show`; setTimeout(() => el.classList.remove('show'), 2200); },
+  updateConn: on => {
+    const dot = document.getElementById('liveDot'), txt = document.getElementById('liveTxt');
+    if (on) { dot.classList.add('on'); txt.textContent = 'LIVE'; } else { dot.classList.remove('on'); txt.textContent = 'OFFLINE'; }
+  },
+  showState: id => { document.querySelectorAll('.app-state').forEach(s => s.classList.remove('active')); document.getElementById(id)?.classList.add('active'); }
+};
+
+const Firebase = {
+  async init() {
+    try {
+      console.log('🔥 Initializing Firebase...');
+      const app = initializeApp(CONFIG);
+      State.db = getDatabase(app);
+      State.auth = getAuth(app);
+      onValue(ref(State.db, ".info/connected"), snap => Utils.updateConn(snap.val() === true));
+      onAuthStateChanged(State.auth, async user => {
+        if (user) {
+          State.uid = user.uid;
+          console.log('✅ Authenticated:', user.uid);
+          await this.listen();
+          if (State.teamName) { await this.regTeam(); App.showMain(); }
+          State.ready = true;
+          this.enableRegistration();
+        }
+      });
+      await signInAnonymously(State.auth);
+    } catch (e) {
+      console.error('❌ Firebase Init Failed:', e);
+      Utils.showToast(`Connection failed: ${e.message}`, 'error');
+    }
+  },
+  enableRegistration() {
+    const btn = document.getElementById('joinBtn');
+    if (btn) { btn.disabled = false; btn.textContent = 'JOIN GAME'; }
+    document.getElementById('teamInput')?.focus();
+  },
+  async listen() {
+    console.log('👂 Setting up listeners...');
+    const gL = onValue(ref(State.db, "trivia/game"), snap => { 
+      const val = snap.val();
+      console.log('📡 Game state update:', val?.state);
+      if (val && State.teamName) Game.handle(val); 
+    });
+    const sL = onValue(ref(State.db, "trivia/scores"), snap => { if (snap.val()) { State.lastScoresData = snap.val(); Scores.update(snap.val()); } });
+    State.listeners.push(gL, sL);
+  },
+  async regTeam() {
+    try {
+      const r = ref(State.db, `trivia/scores/${State.uid}`);
+      const snap = await new Promise(res => onValue(r, s => res(s), { onlyOnce: true }));
+      if (!snap.exists()) await set(r, { name: State.teamName, scores: {}, joinedAt: Date.now(), lastActive: Date.now() });
+      else await set(ref(State.db, `trivia/scores/${State.uid}/name`), State.teamName);
+      console.log('✅ Team registered');
+    } catch (e) { console.error('Reg error:', e); }
+  },
+  async submit(data) {
+    await push(ref(State.db, "trivia/responses"), { ...data, teamId: State.uid, submittedAt: Date.now(), scored: false });
+  }
+};
+
+const Game = {
+  isNewRoundStart: false,
+  handle(d) {
+    if (!d) return;
+    const { state, round, questions, timerSeconds, isAudioRound, audioPlaying, qnum, questionText } = d || {};
+    const currentRound = round != null ? String(round) : null;
+    const currentState = state != null ? String(state) : null;
+    if (currentRound === State.lastRound && currentState === State.lastState) return;
+    State.lastRound = currentRound; State.lastState = currentState;
+    this.isNewRoundStart = true;
+    if (state === 'reset') { localStorage.clear(); location.reload(); return; }
+    if (state === 'round-active') this.startRound(round, questions, timerSeconds, isAudioRound, audioPlaying);
+    else if (state === 'bonus-question') this.startBonus(qnum, questionText, timerSeconds);
+    else if (state === 'answers') { Utils.showState('stAnswers'); Answers.render(round); }
+    else if (state === 'scoreboard' || state === 'winner') { Utils.showState('stScores'); if (State.lastScoresData) Scores.update(State.lastScoresData); }
+    else { this.stopTimer(); Utils.showState('stWaiting'); }
+  },
+  startRound(round, qList, secs, audio, audioOn) {
+    if (this.isNewRoundStart) {
+      State.submitted = false; State.roundAnswers = {}; State.roundConf = {}; State.usedConf = new Set();
+      this.isNewRoundStart = false;
+    }
+    Utils.showState('stRound');
+    document.getElementById('submitBtn').disabled = false;
+    this.renderQuestions(qList);
+    this.startTimer(secs, 'timerTxt');
+    const aEl = document.getElementById('audioStatus');
+    aEl.classList.toggle('show', !!audio && audioOn);
+    window._currentRound = round;
+  },
+  startBonus(qnum, text, secs) {
+    State.bonusSubmitted = false;
+    Utils.showState('stBonus');
+    document.getElementById('bonusSubmitBtn').disabled = false;
+    document.getElementById('bonusQHeader').textContent = `BONUS Q${qnum}`;
+    document.getElementById('bonusQText').textContent = Utils.sanitize(text);
+    document.getElementById('bonusAnsInput').value = ''; document.getElementById('bonusAnsInput').disabled = false;
+    document.getElementById('bonusConfInput').value = ''; document.getElementById('bonusConfInput').disabled = false;
+    this.startTimer(secs, 'bonusTimerTxt');
+    window._currentRound = 'bonus'; window._currentQ = qnum;
+  },
+  renderQuestions(qs) {
+    if (!qs) return;
+    const el = document.getElementById('qList');
+    el.innerHTML = qs.map(q => {
+      let inputHtml = '';
+      if (q.type === 'journal') inputHtml = `<div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;"><div><span style="font-family:'Space Mono';font-size:10px;color:var(--muted)">DEBIT</span><input class="ans-input journal-input" placeholder="Dr. [Account]" data-q="${q.n}" data-part="debit" style="height:44px;"></div><div style="padding-left:28px;"><span style="font-family:'Space Mono';font-size:10px;color:var(--muted);text-align:right;display:block">CREDIT</span><input class="ans-input journal-input" placeholder="Cr. [Account]" data-q="${q.n}" data-part="credit" style="height:44px;"></div></div>`;
+      else if (q.type === 'slider') { const s = q.slider; inputHtml = `<div style="margin-top:8px;"><div style="display:flex;justify-content:space-between;font-family:'Space Mono';font-size:10px;color:var(--muted);margin-bottom:4px"><span>${s.min}</span><span>${s.max}</span></div><input type="range" class="range-slider" data-q="${q.n}" min="${s.min}" max="${s.max}" value="${Math.round((s.min+s.max)/2)}" style="width:100%;height:6px"><div style="text-align:center;font-family:'Bebas Neue';font-size:32px;color:var(--accent);margin:8px 0" data-display="${q.n}">${Math.round((s.min+s.max)/2)}</div><div style="font-family:'Space Mono';font-size:9px;color:var(--muted);text-align:center">Closer = more points · Off by ${s.cutoff}+ = 0 pts</div></div>`; }
+      else if (q.type === 'mc') inputHtml = `<div style="margin-top:8px"><div class="mc-grid">${q.mcChoices.map(opt => `<button class="mc-btn" data-q="${q.n}" data-val="${opt.letter}: ${opt.label}">${opt.letter}<div style="font-family:'DM Sans';font-size:12px;font-weight:500;margin-top:4px">${opt.label}</div></button>`).join('')}</div></div>`;
+      else if (q.type === 'ml-list') inputHtml = `<div style="margin-top:8px;display:flex;flex-direction:column;gap:8px">${[1,2,3].map(i => `<div><span style="font-family:'Space Mono';font-size:10px;color:var(--muted)">TECHNIQUE ${i}</span><input class="ans-input ml-input" placeholder="e.g. Neural Networks" data-q="${q.n}" data-idx="${i}" style="height:44px"></div>`).join('')}<div style="font-family:'Space Mono';font-size:9px;color:var(--muted);text-align:center;margin-top:4px">1 correct = 0.33× · 2 = 0.66× · 3 = 1.0×</div></div>`;
+      else if (q.type === 'song-artist') inputHtml = `<div style="margin-top:8px;display:flex;flex-direction:column;gap:8px"><div><span style="font-family:'Space Mono';font-size:10px;color:var(--muted)">SONG</span><input class="ans-input sa-input" placeholder="Song title" data-q="${q.n}" data-part="song" style="height:44px"></div><div><span style="font-family:'Space Mono';font-size:10px;color:var(--muted)">ARTIST</span><input class="ans-input sa-input" placeholder="Artist name" data-q="${q.n}" data-part="artist" style="height:44px"></div><div style="font-family:'Space Mono';font-size:9px;color:var(--muted);text-align:center;margin-top:4px">1 correct = 0.5× · 2 correct = 1.0×</div></div>`;
+      else if (q.type === 'song-triple') inputHtml = `<div style="margin-top:8px;display:flex;flex-direction:column;gap:8px"><div><span style="font-family:'Space Mono';font-size:10px;color:var(--muted)">SONG</span><input class="ans-input st-input" placeholder="Song title" data-q="${q.n}" data-part="song" style="height:44px"></div><div><span style="font-family:'Space Mono';font-size:10px;color:var(--muted)">MAIN ARTIST</span><input class="ans-input st-input" placeholder="Primary artist" data-q="${q.n}" data-part="main" style="height:44px"></div><div><span style="font-family:'Space Mono';font-size:10px;color:var(--muted)">FEAT. ARTIST</span><input class="ans-input st-input" placeholder="Featured artist" data-q="${q.n}" data-part="feat" style="height:44px"></div><div style="font-family:'Space Mono';font-size:9px;color:var(--muted);text-align:center;margin-top:4px">Song = 1.0× · +Main = +3 pts · +Feat = +2 pts</div></div>`;
+      else if (q.type === 'dual-answer') inputHtml = `<div style="margin-top:8px;display:flex;flex-direction:column;gap:8px"><div><span style="font-family:'Space Mono';font-size:10px;color:var(--muted)">ANSWER 1</span><input class="ans-input da-input" placeholder="First answer..." data-q="${q.n}" data-part="ans1" style="height:44px"></div><div><span style="font-family:'Space Mono';font-size:10px;color:var(--muted)">ANSWER 2</span><input class="ans-input da-input" placeholder="Second answer..." data-q="${q.n}" data-part="ans2" style="height:44px"></div><div style="font-family:'Space Mono';font-size:9px;color:var(--muted);text-align:center;margin-top:4px">1 correct = 1.0× · 2 correct = 1.5×</div></div>`;
+      else inputHtml = `<textarea class="ans-input" placeholder="Your answer..." data-q="${q.n}" style="margin-top:4px"></textarea>`;
+      return `<div class="q-card" data-n="${q.n}"><div class="q-header">QUESTION ${q.n}</div><div class="q-text">${Utils.sanitize(q.t)}</div>${inputHtml}<span class="conf-label">CONFIDENCE</span><div class="conf-grid">${[1,3,5,7].map(v => `<button class="conf-btn" data-val="${v}" data-qn="${q.n}">${v}</button>`).join('')}</div></div>`;
+    }).join('');
+
+    // Restore answers
+    for (const qn in State.roundAnswers) {
+      const val = State.roundAnswers[qn];
+      const journal = el.querySelectorAll(`.q-card[data-n="${qn}"] .journal-input`);
+      if (journal.length===2 && typeof val==='string' && val.includes('DEBIT:')) { const p=val.split(' | '); if(p[0])journal[0].value=p[0].replace('DEBIT:','').trim(); if(p[1])journal[1].value=p[1].replace('CREDIT:','').trim(); continue; }
+      const sa = el.querySelectorAll(`.q-card[data-n="${qn}"] .sa-input`);
+      if (sa.length===2 && typeof val==='string' && val.includes('SONG:')) { const p=val.split(' | '); if(p[0])sa[0].value=p[0].replace('SONG:','').trim(); if(p[1])sa[1].value=p[1].replace('ARTIST:','').trim(); continue; }
+      const st = el.querySelectorAll(`.q-card[data-n="${qn}"] .st-input`);
+      if (st.length===3 && typeof val==='string' && val.includes('SONG:')) { const p=val.split(' | '); if(p[0])st[0].value=p[0].replace('SONG:','').trim(); if(p[1])st[1].value=p[1].replace('MAIN:','').trim(); if(p[2])st[2].value=p[2].replace('FEAT:','').trim(); continue; }
+      const da = el.querySelectorAll(`.q-card[data-n="${qn}"] .da-input`);
+      if (da.length===2 && typeof val==='string' && val.includes('ANS1:')) { const p=val.split(' | '); if(p[0])da[0].value=p[0].replace('ANS1:','').trim(); if(p[1])da[1].value=p[1].replace('ANS2:','').trim(); continue; }
+      const ml = el.querySelectorAll(`.q-card[data-n="${qn}"] .ml-input`);
+      if (ml.length===3 && typeof val==='string' && val.includes(' | ')) { val.split(' | ').forEach((part,i)=>{if(ml[i])ml[i].value=part.trim()}); continue; }
+      const slider = el.querySelector(`.q-card[data-n="${qn}"] .range-slider`);
+      if (slider && typeof val==='number') { slider.value=val; const d=el.querySelector(`[data-display="${qn}"]`); if(d)d.textContent=val; continue; }
+      const mc = el.querySelector(`.q-card[data-n="${qn}"] .mc-btn[data-val="${val}"]`);
+      if (mc) { mc.classList.add('sel'); mc.style.borderColor='var(--accent)'; mc.style.background='rgba(240,192,64,0.12)'; mc.style.color='var(--accent)'; continue; }
+      const txt = el.querySelector(`.q-card[data-n="${qn}"] textarea.ans-input`);
+      if (txt && typeof val==='string') txt.value=val;
+    }
+
+    // Restore confidence
+    for (const qn in State.roundConf) {
+      const btn = el.querySelector(`.conf-btn[data-val="${State.roundConf[qn]}"][data-qn="${qn}"]`);
+      if (btn) { btn.classList.add('sel'); btn.style.borderColor='var(--accent)'; btn.style.background='rgba(240,192,64,0.15)'; btn.style.color='var(--accent)'; }
+    }
+    el.querySelectorAll('.conf-btn').forEach(b => b.classList.toggle('used', State.usedConf.has(parseInt(b.dataset.val))));
+
+    // Attach handlers
+    el.querySelectorAll('.ans-input').forEach(inp => {
+      inp.addEventListener('touchend', e => { e.preventDefault(); inp.focus(); });
+      inp.addEventListener('focus', () => State.isEditing = true);
+      inp.addEventListener('blur', () => setTimeout(() => State.isEditing = false, 300));
+    });
+    el.querySelectorAll('.range-slider').forEach(slider => {
+      const display = el.querySelector(`[data-display="${slider.dataset.q}"]`);
+      slider.addEventListener('input', e => { if(display)display.textContent=e.target.value; State.isEditing=true; });
+      slider.addEventListener('touchend', e => { e.preventDefault(); slider.focus(); });
+    });
+    el.querySelectorAll('.mc-btn').forEach(btn => {
+      btn.addEventListener('touchend', e => { e.preventDefault(); btn.click(); });
+      btn.addEventListener('click', () => {
+        el.querySelectorAll(`.mc-btn[data-q="${btn.dataset.q}"]`).forEach(b => { b.classList.remove('sel'); b.style.borderColor='var(--border)'; b.style.background='var(--surface)'; b.style.color='var(--muted)'; });
+        btn.classList.add('sel'); btn.style.borderColor='var(--accent)'; btn.style.background='rgba(240,192,64,0.12)'; btn.style.color='var(--accent)';
+        State.roundAnswers[btn.dataset.q] = btn.dataset.val;
+      });
+    });
+    
+    el.querySelectorAll('.conf-btn').forEach(btn => {
+      btn.addEventListener('touchend', e => { e.preventDefault(); btn.click(); });
+      btn.addEventListener('click', () => {
+        const val = parseInt(btn.dataset.val);
+        const qn = btn.dataset.qn;
+        if (btn.classList.contains('sel')) {
+          // Clicking the already-selected button — deselect it
+          btn.classList.remove('sel');
+          State.usedConf.delete(val);
+          delete State.roundConf[qn];
+        } else {
+          // 1. Clear whatever was previously selected for THIS question
+          const prevVal = State.roundConf[qn];
+          if (prevVal !== undefined) {
+            el.querySelector(`.conf-btn[data-val="${prevVal}"][data-qn="${qn}"]`)?.classList.remove('sel');
+            State.usedConf.delete(prevVal);
+          }
+          // 2. If this value is already used on a DIFFERENT question, remove it from there
+          if (State.usedConf.has(val)) {
+            el.querySelectorAll(`.conf-btn.sel[data-val="${val}"]`).forEach(b => {
+              b.classList.remove('sel');
+              delete State.roundConf[b.dataset.qn];
+            });
+            State.usedConf.delete(val);
+          }
+          // 3. Select this button
+          btn.classList.add('sel');
+          State.usedConf.add(val);
+          State.roundConf[qn] = val;
+        }
+        // Refresh all button styles
+        el.querySelectorAll('.conf-btn').forEach(b => {
+          const bVal = parseInt(b.dataset.val);
+          const isSel = b.classList.contains('sel');
+          const isBlocked = State.usedConf.has(bVal) && !isSel;
+          b.classList.toggle('used', isBlocked);
+          if (isSel) {
+            b.style.borderColor = 'var(--accent)';
+            b.style.background = 'rgba(240,192,64,0.15)';
+            b.style.color = 'var(--accent)';
+          } else {
+            b.style.borderColor = 'var(--border)';
+            b.style.background = 'var(--surface)';
+            b.style.color = 'var(--muted)';
+          }
+        });
+      });
+    });
+  },
+  startTimer(secs, elId) {
+    this.stopTimer(); State.timeLeft = secs;
+    const el = document.getElementById(elId);
+    const fmt = s => `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
+    el.textContent = fmt(State.timeLeft);
+    State.timer = setInterval(() => {
+      State.timeLeft--; el.textContent = fmt(State.timeLeft);
+      if (State.timeLeft <= 60) el.classList.add('urgent');
+      if (State.timeLeft <= 0) { this.stopTimer(); el.textContent = "TIME!"; document.getElementById('submitBtn')?.click(); }
+    }, 1000);
+  },
+  stopTimer() { if(State.timer){clearInterval(State.timer);State.timer=null;} document.querySelectorAll('.timer-txt').forEach(e=>e.classList.remove('urgent')); }
+};
+
+window.submitRound = async () => {
+  if (State.submitted || State.isEditing) return;
+  if (State.usedConf.size < 4) { Utils.showToast("Assign all confidence levels (1,3,5,7)", 'error'); return; }
+  const mcCards = document.querySelectorAll('.q-card .mc-grid');
+  for (const grid of mcCards) { if (!grid.querySelector('.mc-btn.sel')) { Utils.showToast(`Select answer for Q${grid.closest('.q-card').dataset.n}`, 'error'); return; } }
+  State.submitted = true; document.getElementById('submitBtn').disabled = true;
+  State.roundAnswers = {};
+  document.querySelectorAll('.q-card').forEach(card => {
+    const qn = card.dataset.n;
+    const journal = card.querySelectorAll('.journal-input');
+    if (journal.length===2) { State.roundAnswers[qn]=`DEBIT:${journal[0].value.trim()} | CREDIT:${journal[1].value.trim()}`; journal.forEach(i=>i.disabled=true); }
+    else {
+      const slider = card.querySelector('.range-slider');
+      if (slider) { State.roundAnswers[qn]=parseInt(slider.value); slider.disabled=true; }
+      else {
+        const ml = card.querySelectorAll('.ml-input');
+        if (ml.length===3) { State.roundAnswers[qn]=Array.from(ml).map(i=>i.value.trim()).join(' | '); ml.forEach(i=>i.disabled=true); }
+        else {
+          const sa = card.querySelectorAll('.sa-input');
+          if (sa.length===2) { State.roundAnswers[qn]=`SONG:${sa[0].value.trim()} | ARTIST:${sa[1].value.trim()}`; sa.forEach(i=>i.disabled=true); }
+          else {
+            const st = card.querySelectorAll('.st-input');
+            if (st.length===3) { State.roundAnswers[qn]=`SONG:${st[0].value.trim()} | MAIN:${st[1].value.trim()} | FEAT:${st[2].value.trim()}`; st.forEach(i=>i.disabled=true); }
+            else {
+              const da = card.querySelectorAll('.da-input');
+              if (da.length===2) { State.roundAnswers[qn]=`ANS1:${da[0].value.trim()} | ANS2:${da[1].value.trim()}`; da.forEach(i=>i.disabled=true); }
+              else { const txt=card.querySelector('textarea.ans-input'); State.roundAnswers[qn]=txt?txt.value.trim():''; if(txt)txt.disabled=true; }
+            }
+          }
+        }
+      }
+    }
+  });
+  try {
+    await Firebase.submit({ round: window._currentRound, answers: State.roundAnswers, confidence: State.roundConf, ts: Date.now() });
+    Utils.showToast("Submitted! ✓");
+    setTimeout(() => { Utils.showState('stWaiting'); document.querySelector('#stWaiting .wt').textContent="Answers Submitted!"; }, 800);
+  } catch (e) { Utils.showToast("Submission failed", 'error'); State.submitted=false; }
+};
+
+window.submitBonus = async () => {
+  if (State.bonusSubmitted || State.isEditing) return;
+  const ans=document.getElementById('bonusAnsInput').value.trim();
+  const conf=parseInt(document.getElementById('bonusConfInput').value);
+  if (!ans) { Utils.showToast("Enter an answer", 'error'); return; }
+  if (isNaN(conf)||conf<1||conf>20) { Utils.showToast("Confidence must be 1-20", 'error'); return; }
+  State.bonusSubmitted=true; document.getElementById('bonusSubmitBtn').disabled=true;
+  document.getElementById('bonusAnsInput').disabled=true; document.getElementById('bonusConfInput').disabled=true;
+  try {
+    await Firebase.submit({ round:'bonus', qnum:window._currentQ, answer:ans, confidence:conf, ts:Date.now() });
+    Utils.showToast("Submitted! ✓");
+    setTimeout(() => { Utils.showState('stWaiting'); document.querySelector('#stWaiting .wt').textContent="Waiting for next question..."; }, 800);
+  } catch (e) { Utils.showToast("Failed", 'error'); State.bonusSubmitted=false; document.getElementById('bonusAnsInput').disabled=false; document.getElementById('bonusConfInput').disabled=false; }
+};
+
+const Answers = { render() { document.getElementById('answersContent').innerHTML=`<p style="text-align:center;color:var(--muted)">Answers revealed by host</p>`; } };
+const Scores = {
+  update(data) {
+    if (!document.getElementById('stScores').classList.contains('active')) return;
+    const teams = Object.values(data||{}).map(t=>({name:Utils.sanitize(t.name),total:Object.values(t.scores||{}).reduce((a,b)=>a+(Number(b)||0),0),last:t.lastActive||0})).sort((a,b)=>b.total-a.total||(b.last-a.last));
+    const allZero = teams.every(t => t.total === 0);
+    if (allZero) { localStorage.setItem("lastRank","99"); document.getElementById('rankBanner').classList.remove('show'); }
+    const idx=teams.findIndex(t=>t.name===State.teamName), rank=idx>=0?idx+1:null;
+    document.getElementById('scoresContent').innerHTML=teams.slice(0,8).map((t,i)=>{
+      const isMine=t.name===State.teamName, isF=i===0, medal=isF?"🥇":i===1?"🥈":i===2?"🥉":i+1;
+      return `<div class="sc-item${isF?" first":""}${isMine?" mine":""}"><div class="sc-rank">${medal}</div><div class="sc-name">${t.name}${isMine?" (You)":""}</div><div class="sc-pts">${t.total}</div></div>`;
+    }).join('');
+    if(rank && !allZero){const prev=parseInt(localStorage.getItem("lastRank")||"99");if(prev!==rank&&prev!=="99"){const banner=document.getElementById('rankBanner');banner.textContent=`${rank<prev?"📈":""} You are now #${rank}!`;banner.classList.add('show');setTimeout(()=>banner.classList.remove('show'),3000);}localStorage.setItem("lastRank",rank);}
+  }
+};
+
+const App = { showMain() { document.getElementById('regScreen').style.display='none'; document.getElementById('hTeam').textContent=Utils.sanitize(State.teamName); document.getElementById('mainApp').style.display='flex'; } };
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await Firebase.init();
+  document.getElementById('joinBtn')?.addEventListener('click', async () => {
+    if(!State.ready) return;
+    const name=document.getElementById('teamInput').value.trim();
+    if(!name||name.length<2){Utils.showToast("Enter a valid team name",'error');return;}
+    const btn=document.getElementById('joinBtn');btn.disabled=true;btn.textContent="Joining...";
+    State.teamName=Utils.sanitize(name);State.teamId=State.uid;
+    localStorage.setItem("tTeamName",State.teamName);localStorage.setItem("tTeamId",State.teamId);
+    App.showMain();await Firebase.regTeam();Utils.showToast(`Welcome, ${State.teamName}! 🎉`);
+  });
+  document.getElementById('submitBtn')?.addEventListener('click', window.submitRound);
+  document.getElementById('bonusSubmitBtn')?.addEventListener('click', window.submitBonus);
+  const bonusAns=document.getElementById('bonusAnsInput');
+  if(bonusAns){bonusAns.addEventListener('touchend',e=>{e.preventDefault();bonusAns.focus();});bonusAns.addEventListener('focus',()=>State.isEditing=true);bonusAns.addEventListener('blur',()=>setTimeout(()=>State.isEditing=false,300));}
+});
+</script>
+</body>
+</html>
